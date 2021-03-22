@@ -70,3 +70,9 @@ services:
       io.rancher.container.hostname_override: container_name
       io.rancher.scheduler.affinity:host_label: portus=true
       io.rancher.container.start_once: true
+
+  registry-letsencrypt:
+    labels:
+      io.rancher.scheduler.affinity:host_label: registry=true
+      io.rancher.container.create_agent: 'true'
+      io.rancher.container.agent.role: environment

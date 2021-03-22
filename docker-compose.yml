@@ -5,6 +5,7 @@ volumes:
   portus-data:
   registry-data:
   portus-certs:
+  registry-certs:
 
 services:
   portus:
@@ -83,6 +84,7 @@ services:
     image: library/registry:2.6
     depends_on:
       - portus-certs-generator
+      - registry-letsencrypt
     container_name: registry
     # ports:
       #- 5001:5001 # required to access debug service
@@ -112,6 +114,7 @@ services:
     volumes:
       - registry-data:/var/lib/registry
       - portus-certs:/mnt/certs:ro
+      - registry-certs:/certificates:ro
     restart: unless-stopped
 
   portus-certs-generator:
@@ -122,3 +125,20 @@ services:
     volumes:
       - portus-certs:/certs
     restart: 'no'
+
+  registry-letsencrypt:
+    image: mgbi/rancher-letsencrypt:v1.0.0
+    environment:
+      API_VERSION: Production
+      CERT_NAME: ${REGISTRY_FQDN}
+      DNS_RESOLVERS: 8.8.8.8:53,8.8.4.4:53
+      DOMAINS: ${REGISTRY_FQDN}
+      EMAIL: ${LETSENCRYPT_EMAIL}
+      EULA: 'Yes'
+      PROVIDER: HTTP
+      PUBLIC_KEY_TYPE: RSA-2048
+      RENEWAL_PERIOD_DAYS: '21'
+      RENEWAL_TIME: '3'
+      RUN_ONCE: 'false'
+    volumes:
+      - registry-certs:/etc/letsencrypt/production/certs/${REGISTRY_FQDN}

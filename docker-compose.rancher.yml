@@ -1,0 +1,72 @@
+# This file merged with docker-compose.yml creates a production-like
+# configuration for deploying the Rancher stack.
+# Remember to start Rancher Secrets from Catalog before the deployment!
+version: '2'
+
+x-portus-member:
+  &portus-member
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: members=portus
+    restart: on-failure
+
+services:
+  lb:
+    image: rancher/lb-service-haproxy
+    ports:
+      - 80:80
+      - 443:443
+      - 5000:5000
+    labels:
+      # Put load balancer containers on hosts with label portus=true
+      io.rancher.scheduler.affinity:host_label: portus=true
+      # Allow to interact with the Rancher API
+      io.rancher.container.create_agent: 'true'
+      io.rancher.container.agent.role: environmentAdmin
+
+  letsencrypt:
+    image: mgbi/rancher-letsencrypt:v1.0.0
+    environment:
+      API_VERSION: Production
+      CERT_NAME: ${PORTUS_FQDN}
+      DNS_RESOLVERS: 8.8.8.8:53,8.8.4.4:53
+      DOMAINS: ${PORTUS_FQDN}
+      EMAIL: ${LETSENCRYPT_EMAIL}
+      EULA: 'Yes'
+      PROVIDER: HTTP
+      PUBLIC_KEY_TYPE: RSA-2048
+      RENEWAL_PERIOD_DAYS: '21'
+      RENEWAL_TIME: '3'
+      RUN_ONCE: 'false'
+    labels:
+      # Put let's encrypt containers on hosts with label portus=true
+      io.rancher.scheduler.affinity:host_label: portus=true
+      io.rancher.container.create_agent: 'true'
+      io.rancher.container.agent.role: environment
+
+  portus:
+    <<: *portus-member
+    restart: unless-stopped
+
+  background:
+    <<: *portus-member
+    restart: unless-stopped
+
+  db:
+    <<: *portus-member
+    restart: unless-stopped
+
+  registry:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: registry=true
+    restart: unless-stopped
+
+  portus-certs-generator:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label: portus=true
+      io.rancher.container.start_once: true

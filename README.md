@@ -13,26 +13,53 @@ Using the idea of https://github.com/thpham/portus-registry-tls-compose
 Official bootstrap for running your own [Portus](http://port.us.org/) with [Docker Registry](https://docs.docker.com/registry/)
 on [Rancher v1.6](https://rancher.com/docs/rancher/v1.6/en/).
 
-# Install
+## Portus and Docker Registry Rancher stack setup
 
-Run these command in the host where you need portus
-
-*PORTUS_FQDN and REGISTRY_FQDN must be reachable domain from internet to work*
-
+### Configuration structure
 ```
-git clone https://github.com/jsecchiero/letsencrypt-portus
-cd letsencrypt-portus
-export PORTUS_FQDN=portus.example.com          # modify this
-export REGISTRY_FQDN=registry.example.com      # modify this
-export LETSENCRYPT_EMAIL=sysadmins@test.com    # modify this
-export SECRET_KEY_BASE=$(pwgen -n 130 -c 1)
-export PORTUS_PASSWORD=$(pwgen -n 32 -c 1)
-export DATABASE_PASSWORD=$(pwgen -n 32 -c 1)
-envsubst < .env.tmpl > .env
-docker-compose up -d
+.
+├── docker-compose.rancher.yml      # production-like configuration only
+├── docker-compose.yml              # common configuration
+├── rancher-compose.sh              # Rancher stack deployment script
+├── rancher_cli.env                 # Rancher API keys
+└── shared_vars.env                 # public and secret environment variables
 ```
 
-Go to https://portus.example.com and login with `portus` and `PORTUS_PASSWORD`:
+### Environment variables setup
+```
+// create and fill shared_vars.env file (ignored by git)
+// *PORTUS_FQDN and REGISTRY_FQDN must be reachable domain from internet to work*
+// export SECRET_KEY_BASE=$(pwgen -n 130 -c 1)
+// export PORTUS_PASSWORD=$(pwgen -n 32 -c 1)
+// export DATABASE_PASSWORD=$(pwgen -n 32 -c 1)
+cp shared_vars.env.template shared_vars.env
+edit shared_vars.env
+
+// Add variables to the public or secrets ones
+edit rancher-compose.sh
+```
+As you can see, rancher-compose.sh manages the environment variables:
+* Public environment variables will be saved in `.env.rancher` file.
+* Secret environment variables will be saved in separate files in `secrets` directory.
+
+
+### Containers deployment on Rancher
+(after Environment variables setup)
+
+Use your Rancher Account API Key (it can be shared between projects in different
+environments as well) or create a new one:
+
+Open the Rancher GUI and click in the top panel `API` → `Keys` and then click
+`Add Account API Keys`.
+```
+// create and fill rancher_cli.env file (ignored by git)
+cp rancher_cli.env.template rancher_cli.env
+edit rancher_cli.env
+
+./rancher-compose.sh
+```
+
+### Registry connection
 
 Create registry connection:
 - edit _Name_ with `registry`

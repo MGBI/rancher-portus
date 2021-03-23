@@ -11,8 +11,6 @@ services:
   portus:
     image: opensuse/portus:head
     container_name: portus
-    #ports:
-    #  - 3000:3000
     depends_on:
       - db
       - portus-certs-generator
@@ -24,12 +22,13 @@ services:
       PORTUS_DB_HOST: db
       PORTUS_DB_DATABASE: portus_production
       PORTUS_DB_PASSWORD: ${DATABASE_PASSWORD}
-      PORTUS_DB_POOL: 5
+      PORTUS_DB_POOL: '5'
 
       # Secrets
       PORTUS_SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      # certificates are configured in load-balancer
       PORTUS_CHECK_SSL_USAGE_ENABLED: 'false'
-      PORTUS_KEY_PATH: '/mnt/certs/key.pem'
+      PORTUS_KEY_PATH: /mnt/certs/key.pem
       PORTUS_PASSWORD: ${PORTUS_PASSWORD}
       PORTUS_SIGNUP_ENABLED: 'false'
 
@@ -37,7 +36,7 @@ services:
       RAILS_SERVE_STATIC_FILES: 'true'
     volumes:
       - portus-data:/srv/Portus/public
-      - certs:/mnt/certs:ro
+      - portus-certs:/mnt/certs:ro
 
   background:
     image: opensuse/portus:head
@@ -46,52 +45,46 @@ services:
       - db
       - portus-certs-generator
     environment:
-      - PORTUS_BACKGROUND=true
+      PORTUS_BACKGROUND: 'true'
 
       # Theoretically not needed, but cconfig's been buggy on this...
-      - CCONFIG_PREFIX=PORTUS
-      - PORTUS_MACHINE_FQDN_VALUE=${PORTUS_FQDN}
+      CCONFIG_PREFIX: PORTUS
+      PORTUS_MACHINE_FQDN_VALUE: ${PORTUS_FQDN}
 
       # DB. The password for the database should definitely not be here. You are
       # probably better off with Docker Swarm secrets.
-      - PORTUS_DB_HOST=db
-      - PORTUS_DB_DATABASE=portus_production
-      - PORTUS_DB_PASSWORD=${DATABASE_PASSWORD}
-      - PORTUS_DB_POOL=5
+      PORTUS_DB_HOST: db
+      PORTUS_DB_DATABASE: portus_db
+      PORTUS_DB_PASSWORD: ${DATABASE_PASSWORD}
+      PORTUS_DB_POOL: '5'
 
       # Secrets. It can possibly be handled better with Swarm's secrets.
-      - PORTUS_CHECK_SSL_USAGE_ENABLED='false'
-      - PORTUS_SECRET_KEY_BASE=${SECRET_KEY_BASE}
-      - PORTUS_KEY_PATH='/mnt/certs/key.pem'
-      - PORTUS_PASSWORD=${PORTUS_PASSWORD}
+      PORTUS_SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      PORTUS_KEY_PATH: /mnt/certs/key.pem
+      PORTUS_PASSWORD: ${PORTUS_PASSWORD}
     volumes:
       - portus-data:/srv/Portus/public
       - portus-certs:/mnt/certs:ro
 
   db:
-    image: library/mariadb:10.0.23
+    image: mariadb:10.0.23
     command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --init-connect='SET NAMES UTF8;' --innodb-flush-log-at-trx-commit=0
     environment:
-      - MYSQL_DATABASE=portus_production
-
+      MYSQL_DATABASE: portus_db
       # Again, the password shouldn't be handled like this.
-      - MYSQL_ROOT_PASSWORD=${DATABASE_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
     volumes:
       - mysql-data:/var/lib/mysql
-    restart: unless-stopped
   
   registry:
-    image: library/registry:2.6
+    image: registry:2.6
     depends_on:
       - portus-certs-generator
       - registry-letsencrypt
     container_name: registry
-    # ports:
-      #- 5001:5001 # required to access debug service
-      # - 5000:5000
     environment:
       # Storage
-      REGISTRY_STORAGE_DELETE_ENABLED: 'true' 
+      REGISTRY_STORAGE_DELETE_ENABLED: 'true'
       
       # Authentication
       REGISTRY_AUTH_TOKEN_REALM: https://${PORTUS_FQDN}/v2/token
@@ -111,11 +104,15 @@ services:
           timeout: 2000ms
           threshold: 5
           backoff: 1s
+      
+      # Debug
+      # REGISTRY_LOG_LEVEL: debug
     volumes:
       - registry-data:/var/lib/registry
       - portus-certs:/mnt/certs:ro
       - registry-certs:/certificates:ro
-    restart: unless-stopped
+    ports:
+      - 5000:5000
 
   portus-certs-generator:
     image: stakater/ssl-certs-generator:1.0
@@ -124,7 +121,6 @@ services:
       DEBUG: 0
     volumes:
       - portus-certs:/certs
-    restart: 'no'
 
   registry-letsencrypt:
     image: mgbi/rancher-letsencrypt:v1.0.0

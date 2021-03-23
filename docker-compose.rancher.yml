@@ -3,12 +3,15 @@
 # Remember to start Rancher Secrets from Catalog before the deployment!
 version: '2'
 
+volumes:
+  lb-logs:
+
 x-portus-member:
   &portus-member
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.hostname_override: container_name
-      io.rancher.scheduler.affinity:host_label: members=portus
+      io.rancher.scheduler.affinity:host_label: portus=true
     restart: on-failure
 
 services:
@@ -17,7 +20,8 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 5000:5000
+    volumes:
+      - lb-logs:/var/log/haproxy
     labels:
       # Put load balancer containers on hosts with label portus=true
       io.rancher.scheduler.affinity:host_label: portus=true

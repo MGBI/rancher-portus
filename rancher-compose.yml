@@ -30,12 +30,23 @@ services:
         target_port: 3000
         service: portus
       #- protocol: tcp
-      #  hostname: ${REGISTRY_FQDN}
       #  source_port: 5000
       #  target_port: 5000
       #  service: registry
-      - protocol: tcp
-        hostname: ${REGISTRY_FQDN}
-        source_port: 443
-        target_port: 5000
-        service: registry
+      #- protocol: tcp
+      #  source_port: 443
+      #  target_port: 5000
+      #  service: registry
+      #  priority: 2
+      config: |-
+        global
+            log 127.0.0.1:8514 local0 debug
+
+        defaults
+            log global
+            option httplog
+            option logasap
+
+        frontend 80
+            acl 80_well_known_acme_challenge__path path_beg -i /.well-known/acme-challenge/
+            redirect scheme https code 302 if !80_well_known_acme_challenge__path !{ ssl_fc }

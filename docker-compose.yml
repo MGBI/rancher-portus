@@ -15,13 +15,14 @@ x-portus-environment:
     PORTUS_DB_HOST: db
     PORTUS_DB_DATABASE: portus_db
     PORTUS_DB_USERNAME: portus
-    PORTUS_DB_PASSWORD: ${MYSQL_PASSWORD}
+    # PORTUS_DB_PASSWORD: ${MYSQL_PASSWORD}
     PORTUS_DB_POOL: '5'
 
     # Secrets
-    PORTUS_SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+    # PORTUS_SECRET_KEY_BASE: ${SECRET_KEY_BASE}
     PORTUS_KEY_PATH: /mnt/certs/key.pem
-    PORTUS_PASSWORD: ${PORTUS_PASSWORD}
+    PORTUS_USERNAME: ${PORTUS_USERNAME}
+    # PORTUS_PASSWORD: ${PORTUS_PASSWORD}
 
     # Email
     PORTUS_EMAIL_FROM: ${EMAIL_FROM}
@@ -31,7 +32,7 @@ x-portus-environment:
     PORTUS_EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
     PORTUS_EMAIL_SMTP_SSL_TLS: ${EMAIL_SMTP_SSL_TLS}
     PORTUS_EMAIL_SMTP_USER_NAME: ${EMAIL_SMTP_USER_NAME}
-    PORTUS_EMAIL_SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD}
+    # PORTUS_EMAIL_SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD}
 
 services:
   portus:
@@ -54,7 +55,7 @@ services:
       - portus-data:/srv/Portus/public
       - portus-certs:/mnt/certs:ro
     links:
-      - "registry:orka.mgbi.app"
+      - "registry:${REGISTRY_FQDN}"
 
   background:
     image: opensuse/portus:head
@@ -81,16 +82,16 @@ services:
       - portus-data:/srv/Portus/public
       - portus-certs:/mnt/certs:ro
     links:
-      - "registry:orka.mgbi.app"
+      - "registry:${REGISTRY_FQDN}"
 
   db:
     image: mariadb:10.0.23
     command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --init-connect='SET NAMES UTF8;' --innodb-flush-log-at-trx-commit=0
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      # MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: portus_db
       MYSQL_USER: portus
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      # MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - mysql-data:/var/lib/mysql
   

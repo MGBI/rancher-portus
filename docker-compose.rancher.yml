@@ -3,8 +3,33 @@
 # Remember to start Rancher Secrets from Catalog before the deployment!
 version: '2'
 
+secrets:
+  portus-secret-key-base:
+    file: secrets/secret-key-base.txt
+  portus-password:
+    file: secrets/portus-password.txt
+  portus-mysql-root-password:
+    file: secrets/mysql-root-password.txt
+  portus-mysql-password:
+    file: secrets/mysql-password.txt
+  portus-email-smtp-password:
+    file: secrets/email-smtp-password.txt
+
 volumes:
   lb-logs:
+
+x-portus-service:
+  &portus-service
+    secrets:
+      - portus-secret-key-base
+      - portus-password
+      - portus-mysql-password
+      - portus-email-smtp-password
+    environment:
+      PORTUS_SECRET_KEY_BASE_FILE: /run/secrets/portus-secret-key-base
+      PORTUS_PASSWORD_FILE: /run/secrets/portus-password
+      PORTUS_DB_PASSWORD_FILE: /run/secrets/portus-mysql-password
+      PORTUS_EMAIL_SMTP_PASSWORD_FILE: /run/secrets/portus-email-smtp-password
 
 x-portus-member:
   &portus-member
@@ -50,15 +75,23 @@ services:
       io.rancher.container.agent.role: environment
 
   portus:
+    <<: *portus-service
     <<: *portus-member
     restart: unless-stopped
 
   background:
+    <<: *portus-service
     <<: *portus-member
     restart: unless-stopped
 
   db:
     <<: *portus-member
+    secrets:
+      - portus-mysql-root-password
+      - portus-mysql-password
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/portus-mysql-root-password
+      MYSQL_PASSWORD_FILE: /run/secrets/portus-mysql-password
     restart: unless-stopped
 
   registry:

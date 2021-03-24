@@ -60,42 +60,42 @@ edit rancher_cli.env
 ```
 
 ### Registry connection
+Go to `https://${PORTUS_FQDN}` and login with `portus` and `${PORTUS_PASSWORD}`:
 
 Create registry connection:
 - edit _Name_ with `registry`
-- edit _Hostname_ with `registry:5000`
+- edit _Hostname_ with `${REGISTRY_FQDN}:5000`
 - click on _show advanced button_
-- edit _External Registry Name_ with `registry.example.com`
+- click on _Use SSL_
 - click on _Create admin_ button
 
-![alt text](https://raw.githubusercontent.com/jsecchiero/letsencrypt-portus/master/doc/registry.png)
+![Registry creation](./doc/registry.png)
 
-# Test
-
+### Test
 Insert username and password
 ```
-docker login registry.ll.tips
+docker login ${REGISTRY_FQDN}:5000
 ```
 
 Download an example image and push to the registry
 ```
 docker pull memcached
-docker tag memcached registry.example.com/memcached
-docker push registry.example.com/memcached
+docker tag memcached ${REGISTRY_FQDN}:5000/memcached
+docker push ${REGISTRY_FQDN}:5000/memcached
 ```
 
-# LDAP integration (optional)
+### LDAP integration (optional)
 The system can be authenticated with your LDAP server (local authentication will be disabled)
 Adding this parameters into docker-compose.yml
 
 ```
 environment:
-      # ldap
-      PORTUS_LDAP_ENABLED: 'true'
-      PORTUS_LDAP_HOSTNAME: '<ldap server address or ip>'
-      PORTUS_LDAP_PORT: '389'
-      PORTUS_LDAP_BASE: 'dc=department,dc=example,dc=com'
-      PORTUS_LDAP_AUTHENTICATON_ENABLED: 'true'
-      PORTUS_LDAP_AUTHENTICATON_BIND_DN: 'cn=<ldap user query>,ou=People,dc=department,dc=example,dc=com'
-      PORTUS_LDAP_AUTHENTICATON_PASSWORD: '<ldap cn user password>'
+  # ldap
+  PORTUS_LDAP_ENABLED: 'true'
+  PORTUS_LDAP_HOSTNAME: '<ldap server address or ip>'
+  PORTUS_LDAP_PORT: '389'
+  PORTUS_LDAP_BASE: 'dc=department,dc=example,dc=com'
+  PORTUS_LDAP_AUTHENTICATON_ENABLED: 'true'
+  PORTUS_LDAP_AUTHENTICATON_BIND_DN: 'cn=<ldap user query>,ou=People,dc=department,dc=example,dc=com'
+  PORTUS_LDAP_AUTHENTICATON_PASSWORD: '<ldap cn user password>'
 ```

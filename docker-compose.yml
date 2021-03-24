@@ -133,9 +133,11 @@ services:
       - 5000:5000
 
   portus-certs-generator:
-    image: stakater/ssl-certs-generator:1.0
+    image: mgbi/openssl-certs
     environment: 
       SSL_SUBJECT: portus
+      CA_EXPIRE: '7300'   # 20 lat
+      SSL_EXPIRE: '7300'
       DEBUG: 0
     volumes:
       - portus-certs:/certs

@@ -33,11 +33,6 @@ services:
       #  source_port: 5000
       #  target_port: 5000
       #  service: registry
-      #- protocol: tcp
-      #  source_port: 443
-      #  target_port: 5000
-      #  service: registry
-      #  priority: 2
       config: |-
         global
             log 127.0.0.1:8514 local0 debug

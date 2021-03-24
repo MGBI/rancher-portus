@@ -7,6 +7,21 @@ volumes:
   portus-certs:
   registry-certs:
 
+x-portus-environment:
+  &portus-environment
+    PORTUS_MACHINE_FQDN_VALUE: ${PORTUS_FQDN}
+
+    # MySQL DB
+    PORTUS_DB_HOST: db
+    PORTUS_DB_DATABASE: portus_db
+    PORTUS_DB_PASSWORD: ${DATABASE_PASSWORD}
+    PORTUS_DB_POOL: '5'
+
+    # Secrets
+    PORTUS_SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+    PORTUS_KEY_PATH: /mnt/certs/key.pem
+    PORTUS_PASSWORD: ${PORTUS_PASSWORD}
+
 services:
   portus:
     image: opensuse/portus:head
@@ -15,28 +30,20 @@ services:
       - db
       - portus-certs-generator
     environment:
+      <<: *portus-environment
+      # Server
       PORTUS_DELETE_ENABLED: 'true'
-      PORTUS_MACHINE_FQDN_VALUE: ${PORTUS_FQDN}
-
-      # MySQL DB
-      PORTUS_DB_HOST: db
-      PORTUS_DB_DATABASE: portus_production
-      PORTUS_DB_PASSWORD: ${DATABASE_PASSWORD}
-      PORTUS_DB_POOL: '5'
-
-      # Secrets
-      PORTUS_SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      PORTUS_GRAVATAR_ENABLED: 'false'
+      # Since we have no nginx, portus have to serve the static files
+      RAILS_SERVE_STATIC_FILES: 'true'
       # certificates are configured in load-balancer
       PORTUS_CHECK_SSL_USAGE_ENABLED: 'false'
-      PORTUS_KEY_PATH: /mnt/certs/key.pem
-      PORTUS_PASSWORD: ${PORTUS_PASSWORD}
       PORTUS_SIGNUP_ENABLED: 'false'
-
-      # # Since we have no nginx, portus have to serve the static files
-      RAILS_SERVE_STATIC_FILES: 'true'
     volumes:
       - portus-data:/srv/Portus/public
       - portus-certs:/mnt/certs:ro
+    links:
+      - "registry:orka.mgbi.app"
 
   background:
     image: opensuse/portus:head
@@ -45,26 +52,25 @@ services:
       - db
       - portus-certs-generator
     environment:
+      <<: *portus-environment
+      # Background process
       PORTUS_BACKGROUND: 'true'
+      PORTUS_BACKGROUND_REGISTRY_ENABLED: 'true'
+      PORTUS_BACKGROUND_SYNC_ENABLED: 'true'
+      PORTUS_BACKGROUND_SYNC_STRATEGY: update-delete
+
+      # Garbage collector
+      PORTUS_DELETE_GARBAGE_COLLECTOR_ENABLED: 'true'
+      PORTUS_DELETE_GARBAGE_COLLECTOR_OLDER_THAN: '7'
+      PORTUS_DELETE_GARBAGE_COLLECTOR_KEEP_LATEST: '1'
 
       # Theoretically not needed, but cconfig's been buggy on this...
       CCONFIG_PREFIX: PORTUS
-      PORTUS_MACHINE_FQDN_VALUE: ${PORTUS_FQDN}
-
-      # DB. The password for the database should definitely not be here. You are
-      # probably better off with Docker Swarm secrets.
-      PORTUS_DB_HOST: db
-      PORTUS_DB_DATABASE: portus_db
-      PORTUS_DB_PASSWORD: ${DATABASE_PASSWORD}
-      PORTUS_DB_POOL: '5'
-
-      # Secrets. It can possibly be handled better with Swarm's secrets.
-      PORTUS_SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-      PORTUS_KEY_PATH: /mnt/certs/key.pem
-      PORTUS_PASSWORD: ${PORTUS_PASSWORD}
     volumes:
       - portus-data:/srv/Portus/public
       - portus-certs:/mnt/certs:ro
+    links:
+      - "registry:orka.mgbi.app"
 
   db:
     image: mariadb:10.0.23

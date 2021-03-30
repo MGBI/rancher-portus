@@ -18,11 +18,12 @@ on [Rancher v1.6](https://rancher.com/docs/rancher/v1.6/en/).
 ### Configuration structure
 ```
 .
+├── .env.rancher.tmpl               # template for .env.rancher file with all public environment variables
 ├── docker-compose.rancher.yml      # production-like configuration only
 ├── docker-compose.yml              # common configuration
-├── rancher-compose.sh              # Rancher stack deployment script
+├── prod-compose.sh                 # Rancher stack deployment script
 ├── rancher_cli.env                 # Rancher API keys
-└── shared_vars.env                 # public and secret environment variables
+└── shared_vars.env                 # the values of all public and secret environment variables
 ```
 
 ### Environment variables setup
@@ -35,19 +36,22 @@ on [Rancher v1.6](https://rancher.com/docs/rancher/v1.6/en/).
 cp shared_vars.env.template shared_vars.env
 edit shared_vars.env
 
-// Add variables to the public or secrets ones
-edit rancher-compose.sh
+// Add templates for the public variables
+edit .env.rancher.tmpl
+// And create secret files in `create_secrets_files` function
+edit prod-compose.sh
 ```
-As you can see, rancher-compose.sh manages the environment variables:
+As you can see, prod-compose.sh manages the environment variables:
 * Public environment variables will be saved in `.env.rancher` file.
 * Secret environment variables will be saved in separate files in `secrets` directory.
-
 
 ### Containers deployment on Rancher
 (after Environment variables setup)
 
-Use your Rancher Account API Key (it can be shared between projects in different
-environments as well) or create a new one:
+Remember to start Rancher Secrets from Catalog before the deployment!
+
+To deploy use your Rancher Account API Key (it can be shared between projects
+in different environments as well) or create a new one:
 
 Open the Rancher GUI and click in the top panel `API` → `Keys` and then click
 `Add Account API Keys`.
@@ -56,7 +60,7 @@ Open the Rancher GUI and click in the top panel `API` → `Keys` and then click
 cp rancher_cli.env.template rancher_cli.env
 edit rancher_cli.env
 
-./rancher-compose.sh
+./prod-compose.sh
 ```
 
 ### Registry connection

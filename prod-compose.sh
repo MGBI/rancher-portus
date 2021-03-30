@@ -13,7 +13,10 @@ fi
 
 source rancher_cli.env
 
+# load and export all defined variables
+set -o allexport
 source shared_vars.env
+set +o allexport
 
 cleanup () {
 	rm -f .env.rancher
@@ -22,7 +25,12 @@ cleanup () {
 
 trap cleanup EXIT
 
-# set variables used in docker-compose files
+# set variables used in docker-compose file
+envsubst < .env.rancher.tmpl > .env.rancher
+
+source .env.rancher
+
+# check variables used in docker-compose files
 test $PORTUS_FQDN
 test $REGISTRY_FQDN
 test $LETSENCRYPT_EMAIL
@@ -34,8 +42,6 @@ test $EMAIL_SMTP_PORT
 test $EMAIL_SMTP_DOMAIN
 test $EMAIL_SMTP_SSL_TLS
 test $EMAIL_SMTP_USER_NAME
-
-envsubst < .env.rancher.tmpl > .env.rancher
 
 create_secrets_files () {(
 	# subshell without printing executed commands

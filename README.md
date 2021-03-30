@@ -1,16 +1,16 @@
 **Forked from:**
 https://github.com/jsecchiero/letsencrypt-portus
 
-Portus Rancher stack deployment added with Let's Encrypt support.
+Rancher stack configuration for Portus deployment added with Let's Encrypt support.
 
 # Portus and Docker Registry with Rancher 1.6 support
 
-[![License](https://img.shields.io/github/license/mgbi/compose-portus.svg?maxAge=8600)]()
+[![License](https://img.shields.io/github/license/mgbi/rancher-portus.svg?maxAge=8600)]()
 
-Deploy portus with auto-generated ssl certificate with letsencrypt.  
+Deploy Portus with auto-generated SSL certificate with Let's Encrypt.
 Using the idea of https://github.com/thpham/portus-registry-tls-compose
 
-Official bootstrap for running your own [Portus](http://port.us.org/) with [Docker Registry](https://docs.docker.com/registry/)
+Unofficial bootstrap for running your own [Portus](http://port.us.org/) with [Docker Registry](https://docs.docker.com/registry/)
 on [Rancher v1.6](https://rancher.com/docs/rancher/v1.6/en/).
 
 ## Portus and Docker Registry Rancher stack setup

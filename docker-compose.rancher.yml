@@ -84,7 +84,7 @@ services:
     <<: *portus-member
     restart: unless-stopped
 
-  db:
+  mysql:
     <<: *portus-member
     secrets:
       - portus-mysql-root-password

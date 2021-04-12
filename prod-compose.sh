@@ -50,6 +50,7 @@ create_secrets_files () {(
 	test $PORTUS_PASSWORD
 	test $MYSQL_ROOT_PASSWORD
 	test $MYSQL_PASSWORD
+	test $EMAIL_SMTP_PASSWORD
 
 	# the contents of the specified files will be used to create the secrets
 	# before creating the stack and starting the services

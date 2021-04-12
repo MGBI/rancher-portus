@@ -26,7 +26,7 @@ cleanup () {
 trap cleanup EXIT
 
 # set variables used in docker-compose file
-envsubst < .env.rancher.tmpl > .env.rancher
+envsubst < env.rancher.tmpl > .env.rancher
 
 source .env.rancher
 

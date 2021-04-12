@@ -18,7 +18,7 @@ on [Rancher v1.6](https://rancher.com/docs/rancher/v1.6/en/).
 ### Configuration structure
 ```
 .
-├── .env.rancher.tmpl               # template for .env.rancher file with all public environment variables
+├── env.rancher.tmpl                # template for .env.rancher file with all public environment variables
 ├── docker-compose.rancher.yml      # production-like configuration only
 ├── docker-compose.yml              # common configuration
 ├── prod-compose.sh                 # Rancher stack deployment script
@@ -37,7 +37,7 @@ cp shared_vars.env.template shared_vars.env
 edit shared_vars.env
 
 // Add templates for the public variables
-edit .env.rancher.tmpl
+edit env.rancher.tmpl
 // And create secret files in `create_secrets_files` function
 edit prod-compose.sh
 ```

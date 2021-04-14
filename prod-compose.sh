@@ -34,7 +34,6 @@ source .env.rancher
 test $PORTUS_FQDN
 test $REGISTRY_FQDN
 test $LETSENCRYPT_EMAIL
-test $PORTUS_USERNAME
 test $EMAIL_FROM
 test $EMAIL_REPLY_TO
 test $EMAIL_SMTP_ADDRESS

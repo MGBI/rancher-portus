@@ -21,7 +21,6 @@ x-portus-environment:
     # Secrets
     # PORTUS_SECRET_KEY_BASE: ${SECRET_KEY_BASE}
     PORTUS_KEY_PATH: /mnt/certs/key.pem
-    PORTUS_USERNAME: ${PORTUS_USERNAME}
     # PORTUS_PASSWORD: ${PORTUS_PASSWORD}
 
     # Email

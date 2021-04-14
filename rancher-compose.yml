@@ -7,28 +7,26 @@ services:
         - ${PORTUS_FQDN}
       default_cert: ${PORTUS_FQDN}
       port_rules:
+      # Portus service
       - protocol: http
         path: /.well-known/acme-challenge/
         hostname: ${PORTUS_FQDN}
         source_port: 80
         target_port: 80
         service: letsencrypt
-      - protocol: http
+      - protocol: https
         hostname: ${PORTUS_FQDN}
-        source_port: 80
+        source_port: 443
         target_port: 3000
         service: portus
+
+      # Docker Registry service
       - protocol: http
         path: /.well-known/acme-challenge/
         hostname: ${REGISTRY_FQDN}
         source_port: 80
         target_port: 80
         service: registry-letsencrypt
-      - protocol: https
-        hostname: ${PORTUS_FQDN}
-        source_port: 443
-        target_port: 3000
-        service: portus
       #- protocol: tcp
       #  source_port: 5000
       #  target_port: 5000

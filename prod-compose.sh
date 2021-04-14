@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 RANCHER_STACK_NAME=${RANCHER_STACK_NAME:-portus}
 
 if [ ! -f rancher_cli.env ]; then
@@ -38,7 +38,6 @@ test $EMAIL_FROM
 test $EMAIL_REPLY_TO
 test $EMAIL_SMTP_ADDRESS
 test $EMAIL_SMTP_PORT
-test $EMAIL_SMTP_DOMAIN
 test $EMAIL_SMTP_SSL_TLS
 test $EMAIL_SMTP_USER_NAME
 

@@ -95,7 +95,7 @@ services:
       # MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - mysql-data:/var/lib/mysql
-  
+
   registry:
     image: registry:2.6
     depends_on:
@@ -105,7 +105,7 @@ services:
     environment:
       # Storage
       REGISTRY_STORAGE_DELETE_ENABLED: 'true'
-      
+
       # Authentication
       REGISTRY_AUTH_TOKEN_REALM: https://${PORTUS_FQDN}/v2/token
       REGISTRY_AUTH_TOKEN_SERVICE: ${REGISTRY_FQDN}:5000
@@ -124,7 +124,7 @@ services:
           timeout: 2000ms
           threshold: 5
           backoff: 1s
-      
+
       # Debug
       # REGISTRY_LOG_LEVEL: debug
     volumes:
@@ -136,7 +136,7 @@ services:
 
   portus-certs-generator:
     image: mgbi/openssl-certs
-    environment: 
+    environment:
       SSL_SUBJECT: portus
       CA_EXPIRE: '7300'   # 20 lat
       SSL_EXPIRE: '7300'

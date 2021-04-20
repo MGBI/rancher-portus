@@ -40,6 +40,8 @@ services:
     depends_on:
       - mysql
       - portus-certs-generator
+    links:
+      - mysql
     environment:
       <<: *portus-environment
       # Server
@@ -62,6 +64,8 @@ services:
       - portus
       - mysql
       - portus-certs-generator
+    links:
+      - mysql
     environment:
       <<: *portus-environment
       # Background process
@@ -101,6 +105,8 @@ services:
     depends_on:
       - portus-certs-generator
       - registry-letsencrypt
+    links:
+      - portus
     container_name: registry
     environment:
       # Storage

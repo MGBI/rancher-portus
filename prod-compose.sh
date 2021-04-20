@@ -11,39 +11,30 @@ if [ ! -f shared_vars.env ]; then
 	exit 1
 fi
 
-source rancher_cli.env
-
 # load and export all defined variables
 set -o allexport
 source shared_vars.env
 set +o allexport
 
 cleanup () {
-	rm -f .env.rancher
 	rm -rf secrets
 }
 
-trap cleanup EXIT
+check_compose_variables () {
+	# check variables used in docker-compose files
+	test $PORTUS_FQDN
+	test $REGISTRY_FQDN
+	test $LETSENCRYPT_EMAIL
+	test $EMAIL_FROM
+	test $EMAIL_REPLY_TO
+	test $EMAIL_SMTP_ADDRESS
+	test $EMAIL_SMTP_PORT
+	test $EMAIL_SMTP_SSL_TLS
+	test $EMAIL_SMTP_USER_NAME
+}
 
-# set variables used in docker-compose file
-envsubst < env.rancher.tmpl > .env.rancher
-
-source .env.rancher
-
-# check variables used in docker-compose files
-test $PORTUS_FQDN
-test $REGISTRY_FQDN
-test $LETSENCRYPT_EMAIL
-test $EMAIL_FROM
-test $EMAIL_REPLY_TO
-test $EMAIL_SMTP_ADDRESS
-test $EMAIL_SMTP_PORT
-test $EMAIL_SMTP_SSL_TLS
-test $EMAIL_SMTP_USER_NAME
-
-create_secrets_files () {(
-	# subshell without printing executed commands
-	set +x
+create_secrets_files () {
+	# create files with secrets values
 	test $SECRET_KEY_BASE
 	test $PORTUS_PASSWORD
 	test $MYSQL_ROOT_PASSWORD
@@ -54,13 +45,16 @@ create_secrets_files () {(
 	# before creating the stack and starting the services
 	mkdir -p secrets
 	echo $SECRET_KEY_BASE > secrets/secret-key-base.txt
+	unset SECRET_KEY_BASE
 	echo $PORTUS_PASSWORD > secrets/portus-password.txt
+	unset PORTUS_PASSWORD
 	echo $MYSQL_ROOT_PASSWORD > secrets/mysql-root-password.txt
+	unset MYSQL_ROOT_PASSWORD
 	echo $MYSQL_PASSWORD > secrets/mysql-password.txt
+	unset MYSQL_PASSWORD
 	echo $EMAIL_SMTP_PASSWORD > secrets/email-smtp-password.txt
-)}
-
-create_secrets_files
+	unset EMAIL_SMTP_PASSWORD
+}
 
 rancher_cli () {
 	rancher --file docker-compose.yml --file docker-compose.rancher.yml \
@@ -76,9 +70,22 @@ enable_https () {
 	git checkout rancher-compose.yml
 }
 
+trap cleanup EXIT
+
+check_compose_variables
+
+create_secrets_files
+
+source rancher_cli.env
+
+# load Rancher access data
+test $RANCHER_URL
+test $RANCHER_ACCESS_KEY
+test $RANCHER_SECRET_KEY
+
 rancher ps $RANCHER_STACK_NAME/lb || (disable_https && DISABLED_HTTPS=1)
 
-rancher_cli up -d --stack $RANCHER_STACK_NAME --env-file .env.rancher --pull \
+rancher_cli up -d --stack $RANCHER_STACK_NAME --pull \
 	--upgrade --confirm-upgrade --description "Portus authorization service with the Docker Registry"
 
 if [ "$DISABLED_HTTPS" = 1 ]; then

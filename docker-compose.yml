@@ -105,8 +105,6 @@ services:
     depends_on:
       - portus-certs-generator
       - registry-letsencrypt
-    links:
-      - portus
     container_name: registry
     environment:
       # Storage
